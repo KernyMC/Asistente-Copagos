@@ -1,0 +1,493 @@
+{
+  "metadata": {
+    "demo_name": "Estimador Agentico de Copago y Cobertura",
+    "country": "Ecuador",
+    "city_scope": [
+      "Quito"
+    ],
+    "currency": "USD",
+    "version": "hackathon-v1",
+    "disclaimer": "Los valores son demostrativos y realistas, no contractuales."
+  },
+  "insurers": [
+    {
+      "insurer_id": "vida_clara",
+      "display_name": "Vida Clara",
+      "inspiration_note": "Inspirada en aseguradoras privadas de salud de Ecuador; usar solo como marca demo.",
+      "plans": [
+        {
+          "plan_id": "vc_esencial",
+          "display_name": "Vida Clara Esencial",
+          "network_type": "cerrada_preferente",
+          "annual_deductible_usd": 120,
+          "consult_copay_usd": 15,
+          "urgent_care_copay_usd": 35,
+          "emergency_copay_usd": 60,
+          "lab_coverage_in_network_pct": 0.8,
+          "imaging_coverage_in_network_pct": 0.75,
+          "hospitalization_coverage_in_network_pct": 0.85,
+          "coverage_out_of_network_pct": 0.55,
+          "requires_preauthorization_for_hospitalization": true,
+          "waiting_period_notes": "Maternidad y condiciones preexistentes excluidas de la demo."
+        },
+        {
+          "plan_id": "vc_plus",
+          "display_name": "Vida Clara Plus",
+          "network_type": "cerrada_preferente",
+          "annual_deductible_usd": 80,
+          "consult_copay_usd": 10,
+          "urgent_care_copay_usd": 25,
+          "emergency_copay_usd": 45,
+          "lab_coverage_in_network_pct": 0.9,
+          "imaging_coverage_in_network_pct": 0.85,
+          "hospitalization_coverage_in_network_pct": 0.92,
+          "coverage_out_of_network_pct": 0.7,
+          "requires_preauthorization_for_hospitalization": true,
+          "waiting_period_notes": "Maternidad y condiciones preexistentes excluidas de la demo."
+        }
+      ]
+    },
+    {
+      "insurer_id": "andes_salud",
+      "display_name": "Andes Salud",
+      "inspiration_note": "Marca ficticia para la demo.",
+      "plans": [
+        {
+          "plan_id": "as_familiar",
+          "display_name": "Andes Salud Familiar",
+          "network_type": "mixta",
+          "annual_deductible_usd": 150,
+          "consult_copay_usd": 18,
+          "urgent_care_copay_usd": 40,
+          "emergency_copay_usd": 70,
+          "lab_coverage_in_network_pct": 0.78,
+          "imaging_coverage_in_network_pct": 0.72,
+          "hospitalization_coverage_in_network_pct": 0.88,
+          "coverage_out_of_network_pct": 0.6,
+          "requires_preauthorization_for_hospitalization": true,
+          "waiting_period_notes": "Exclusiones simplificadas para hackathon."
+        },
+        {
+          "plan_id": "as_preferente",
+          "display_name": "Andes Salud Preferente",
+          "network_type": "mixta_preferente",
+          "annual_deductible_usd": 100,
+          "consult_copay_usd": 12,
+          "urgent_care_copay_usd": 28,
+          "emergency_copay_usd": 50,
+          "lab_coverage_in_network_pct": 0.88,
+          "imaging_coverage_in_network_pct": 0.82,
+          "hospitalization_coverage_in_network_pct": 0.93,
+          "coverage_out_of_network_pct": 0.7,
+          "requires_preauthorization_for_hospitalization": true,
+          "waiting_period_notes": "Exclusiones simplificadas para hackathon."
+        }
+      ]
+    },
+    {
+      "insurer_id": "equa_benefits",
+      "display_name": "Equa Benefits",
+      "inspiration_note": "Marca ficticia para la demo.",
+      "plans": [
+        {
+          "plan_id": "eb_urbano",
+          "display_name": "Equa Benefits Urbano",
+          "network_type": "abierta_controlada",
+          "annual_deductible_usd": 180,
+          "consult_copay_usd": 20,
+          "urgent_care_copay_usd": 45,
+          "emergency_copay_usd": 75,
+          "lab_coverage_in_network_pct": 0.75,
+          "imaging_coverage_in_network_pct": 0.7,
+          "hospitalization_coverage_in_network_pct": 0.82,
+          "coverage_out_of_network_pct": 0.58,
+          "requires_preauthorization_for_hospitalization": true,
+          "waiting_period_notes": "Exclusiones simplificadas para hackathon."
+        },
+        {
+          "plan_id": "eb_ejecutivo",
+          "display_name": "Equa Benefits Ejecutivo",
+          "network_type": "abierta_controlada",
+          "annual_deductible_usd": 90,
+          "consult_copay_usd": 12,
+          "urgent_care_copay_usd": 30,
+          "emergency_copay_usd": 48,
+          "lab_coverage_in_network_pct": 0.9,
+          "imaging_coverage_in_network_pct": 0.85,
+          "hospitalization_coverage_in_network_pct": 0.94,
+          "coverage_out_of_network_pct": 0.72,
+          "requires_preauthorization_for_hospitalization": true,
+          "waiting_period_notes": "Exclusiones simplificadas para hackathon."
+        }
+      ]
+    }
+  ],
+  "providers": [
+    {
+      "provider_id": "metropolitano_quito",
+      "display_name": "Hospital Metropolitano",
+      "city": "Quito",
+      "network_tier": "preferente",
+      "relative_cost_index": 1.25,
+      "service_types": [
+        "consulta",
+        "urgencia",
+        "emergencia",
+        "hospitalizacion",
+        "imagenes",
+        "laboratorio"
+      ],
+      "specialties": [
+        "cardiologia",
+        "gastroenterologia",
+        "traumatologia",
+        "neurologia",
+        "medicina_general"
+      ],
+      "estimated_base_prices_usd": {
+        "consulta": 55,
+        "urgencia": 140,
+        "emergencia": 220,
+        "laboratorio": 35,
+        "imagenes": 120,
+        "hospitalizacion_dia": 950
+      }
+    },
+    {
+      "provider_id": "vozandes_quito",
+      "display_name": "Hospital Vozandes Quito",
+      "city": "Quito",
+      "network_tier": "preferente",
+      "relative_cost_index": 1.05,
+      "service_types": [
+        "consulta",
+        "urgencia",
+        "emergencia",
+        "hospitalizacion",
+        "imagenes",
+        "laboratorio"
+      ],
+      "specialties": [
+        "medicina_general",
+        "pediatria",
+        "ginecologia",
+        "traumatologia",
+        "gastroenterologia"
+      ],
+      "estimated_base_prices_usd": {
+        "consulta": 45,
+        "urgencia": 120,
+        "emergencia": 200,
+        "laboratorio": 28,
+        "imagenes": 95,
+        "hospitalizacion_dia": 780
+      }
+    },
+    {
+      "provider_id": "pasteur_quito",
+      "display_name": "Hospital Pasteur",
+      "city": "Quito",
+      "network_tier": "estandar",
+      "relative_cost_index": 0.98,
+      "service_types": [
+        "consulta",
+        "urgencia",
+        "emergencia",
+        "hospitalizacion",
+        "imagenes",
+        "laboratorio"
+      ],
+      "specialties": [
+        "medicina_general",
+        "traumatologia",
+        "ginecologia",
+        "urologia"
+      ],
+      "estimated_base_prices_usd": {
+        "consulta": 40,
+        "urgencia": 110,
+        "emergencia": 185,
+        "laboratorio": 25,
+        "imagenes": 90,
+        "hospitalizacion_dia": 720
+      }
+    },
+    {
+      "provider_id": "clinica_pichincha",
+      "display_name": "Clinica Pichincha",
+      "city": "Quito",
+      "network_tier": "estandar",
+      "relative_cost_index": 0.92,
+      "service_types": [
+        "consulta",
+        "urgencia",
+        "imagenes",
+        "laboratorio"
+      ],
+      "specialties": [
+        "medicina_general",
+        "dermatologia",
+        "gastroenterologia",
+        "traumatologia"
+      ],
+      "estimated_base_prices_usd": {
+        "consulta": 38,
+        "urgencia": 98,
+        "emergencia": 0,
+        "laboratorio": 22,
+        "imagenes": 82,
+        "hospitalizacion_dia": 0
+      }
+    },
+    {
+      "provider_id": "hospital_axxis",
+      "display_name": "Hospital Axxis",
+      "city": "Quito",
+      "network_tier": "preferente",
+      "relative_cost_index": 1.1,
+      "service_types": [
+        "consulta",
+        "urgencia",
+        "hospitalizacion",
+        "imagenes",
+        "laboratorio"
+      ],
+      "specialties": [
+        "medicina_general",
+        "traumatologia",
+        "neurologia",
+        "cardiologia"
+      ],
+      "estimated_base_prices_usd": {
+        "consulta": 48,
+        "urgencia": 125,
+        "emergencia": 0,
+        "laboratorio": 30,
+        "imagenes": 100,
+        "hospitalizacion_dia": 810
+      }
+    },
+    {
+      "provider_id": "clinica_internacional",
+      "display_name": "Clinica Internacional Quito",
+      "city": "Quito",
+      "network_tier": "estandar",
+      "relative_cost_index": 1.0,
+      "service_types": [
+        "consulta",
+        "urgencia",
+        "hospitalizacion",
+        "imagenes",
+        "laboratorio"
+      ],
+      "specialties": [
+        "medicina_general",
+        "ginecologia",
+        "pediatria",
+        "gastroenterologia",
+        "cardiologia"
+      ],
+      "estimated_base_prices_usd": {
+        "consulta": 42,
+        "urgencia": 115,
+        "emergencia": 0,
+        "laboratorio": 26,
+        "imagenes": 92,
+        "hospitalizacion_dia": 760
+      }
+    }
+  ],
+  "symptom_router": [
+    {
+      "symptom_keywords": [
+        "dolor de rodilla",
+        "me torci el tobillo",
+        "dolor de hombro",
+        "me cai"
+      ],
+      "specialty": "traumatologia",
+      "attention_type": "consulta",
+      "urgency": "media",
+      "recommended_followups": [
+        "hubo golpe fuerte",
+        "puedes apoyar el pie",
+        "hay fiebre o deformidad visible"
+      ]
+    },
+    {
+      "symptom_keywords": [
+        "dolor de pecho",
+        "palpitaciones",
+        "presion en el pecho"
+      ],
+      "specialty": "cardiologia",
+      "attention_type": "emergencia",
+      "urgency": "alta",
+      "recommended_followups": [
+        "falta de aire",
+        "sudor frio",
+        "dolor irradiado al brazo"
+      ]
+    },
+    {
+      "symptom_keywords": [
+        "dolor de estomago",
+        "reflujo",
+        "nausea",
+        "gastritis"
+      ],
+      "specialty": "gastroenterologia",
+      "attention_type": "consulta",
+      "urgency": "baja_media",
+      "recommended_followups": [
+        "hay vomito persistente",
+        "hay sangrado",
+        "el dolor es intenso y continuo"
+      ]
+    },
+    {
+      "symptom_keywords": [
+        "fiebre",
+        "tos",
+        "malestar general"
+      ],
+      "specialty": "medicina_general",
+      "attention_type": "consulta",
+      "urgency": "baja",
+      "recommended_followups": [
+        "cuantos dias llevas",
+        "tienes dificultad para respirar",
+        "temperatura estimada"
+      ]
+    },
+    {
+      "symptom_keywords": [
+        "rash",
+        "picazon",
+        "alergia en la piel"
+      ],
+      "specialty": "dermatologia",
+      "attention_type": "consulta",
+      "urgency": "baja",
+      "recommended_followups": [
+        "hay inflamacion de labios",
+        "hay fiebre",
+        "desde cuando aparecio"
+      ]
+    },
+    {
+      "symptom_keywords": [
+        "mareo",
+        "dolor de cabeza fuerte",
+        "hormigueo"
+      ],
+      "specialty": "neurologia",
+      "attention_type": "urgencia",
+      "urgency": "media_alta",
+      "recommended_followups": [
+        "debilidad en un lado",
+        "dificultad para hablar",
+        "inicio repentino"
+      ]
+    },
+    {
+      "symptom_keywords": [
+        "embarazo",
+        "dolor pelvico",
+        "flujo",
+        "control ginecologico"
+      ],
+      "specialty": "ginecologia",
+      "attention_type": "consulta",
+      "urgency": "baja_media",
+      "recommended_followups": [
+        "hay sangrado abundante",
+        "se trata de control regular",
+        "hay dolor severo"
+      ]
+    },
+    {
+      "symptom_keywords": [
+        "nino con fiebre",
+        "pediatria",
+        "mi hijo tiene tos"
+      ],
+      "specialty": "pediatria",
+      "attention_type": "consulta",
+      "urgency": "baja_media",
+      "recommended_followups": [
+        "edad del menor",
+        "temperatura",
+        "dificultad respiratoria"
+      ]
+    }
+  ],
+  "network_rules": {
+    "preferente_discount_extra_pct": 0.05,
+    "standard_no_extra_discount_pct": 0.0,
+    "out_of_network_penalty_pct": 0.15,
+    "emergency_override_message": "Si hay signos de alarma, el agente debe priorizar acudir al servicio de emergencia mas cercano antes de optimizar costos."
+  },
+  "estimation_rules": {
+    "consultation_formula": "gasto = copago fijo del plan en red; fuera de red = max(copago, tarifa_base * (1 - cobertura_fuera_red) + penalidad)",
+    "lab_formula": "gasto = tarifa_base * (1 - cobertura_laboratorio_en_red); si deducible pendiente > 0, sumar hasta agotar deducible",
+    "imaging_formula": "gasto = tarifa_base * (1 - cobertura_imagenes_en_red); si deducible pendiente > 0, sumar hasta agotar deducible",
+    "hospitalization_formula": "gasto = (tarifa_base * dias_estimados) * (1 - cobertura_hospitalaria_en_red) + copago_de_emergencia_si_aplica + deducible_pendiente",
+    "demo_simplifications": [
+      "No modelar reembolsos diferidos.",
+      "No modelar exclusiones clinicas complejas.",
+      "No modelar copagos por medico individual.",
+      "Limitar la recomendacion a proveedores con especialidad compatible."
+    ]
+  },
+  "demo_scenarios": [
+    {
+      "scenario_id": "rodilla_vc_plus",
+      "input": {
+        "symptom_text": "Me duele mucho la rodilla desde ayer y me cai jugando futbol",
+        "city": "Quito",
+        "insurer_id": "vida_clara",
+        "plan_id": "vc_plus",
+        "deductible_remaining_usd": 20
+      },
+      "expected_output_summary": {
+        "specialty": "traumatologia",
+        "attention_type": "consulta",
+        "best_provider": "Hospital Pasteur",
+        "estimated_out_of_pocket_usd": 10
+      }
+    },
+    {
+      "scenario_id": "pecho_as_preferente",
+      "input": {
+        "symptom_text": "Tengo presion en el pecho y falta de aire",
+        "city": "Quito",
+        "insurer_id": "andes_salud",
+        "plan_id": "as_preferente",
+        "deductible_remaining_usd": 100
+      },
+      "expected_output_summary": {
+        "specialty": "cardiologia",
+        "attention_type": "emergencia",
+        "best_provider": "Hospital Vozandes Quito",
+        "estimated_out_of_pocket_usd": 150
+      }
+    },
+    {
+      "scenario_id": "gastritis_eb_ejecutivo",
+      "input": {
+        "symptom_text": "Tengo dolor de estomago y reflujo hace dias",
+        "city": "Quito",
+        "insurer_id": "equa_benefits",
+        "plan_id": "eb_ejecutivo",
+        "deductible_remaining_usd": 0
+      },
+      "expected_output_summary": {
+        "specialty": "gastroenterologia",
+        "attention_type": "consulta",
+        "best_provider": "Clinica Pichincha",
+        "estimated_out_of_pocket_usd": 12
+      }
+    }
+  ]
+}
