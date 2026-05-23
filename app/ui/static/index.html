@@ -253,11 +253,10 @@
 
     .msg-bubble {
       max-width: 78%;
-      padding: 10px 14px;
+      padding: 11px 15px;
       border-radius: 16px;
       font-size: 0.88rem;
-      line-height: 1.55;
-      white-space: pre-wrap;
+      line-height: 1.6;
       word-break: break-word;
     }
     .msg-row.agent .msg-bubble {
@@ -269,6 +268,7 @@
       background: var(--c-primary);
       color: #fff;
       border-bottom-right-radius: 4px;
+      min-width: 48px;
     }
     .msg-row.emergency .msg-bubble {
       background: var(--c-emergency-bg);
@@ -277,6 +277,16 @@
       border-left: 4px solid var(--c-emergency);
       border-radius: 4px 16px 16px 4px;
     }
+
+    /* Markdown inside agent bubbles */
+    .msg-bubble p { margin: 0 0 8px; }
+    .msg-bubble p:last-child { margin-bottom: 0; }
+    .msg-bubble ul { margin: 4px 0 8px 18px; padding: 0; list-style: disc; }
+    .msg-bubble ul:last-child { margin-bottom: 0; }
+    .msg-bubble li { margin-bottom: 3px; line-height: 1.5; }
+    .msg-bubble strong { font-weight: 700; color: var(--c-fg); }
+    .msg-row.emergency .msg-bubble strong { color: #7f1d1d; }
+    .msg-bubble em { font-style: italic; }
     .msg-time {
       font-size: 0.68rem;
       color: var(--c-fg-soft);
@@ -514,6 +524,34 @@
       display: flex; align-items: flex-start; gap: 6px;
     }
     .results-disclaimer svg { width: 14px; height: 14px; flex-shrink: 0; stroke: var(--c-fg-soft); fill: none; stroke-width: 2; margin-top: 1px; }
+
+    /* ── Quick replies ──────────────────────────────────────────────────── */
+    .quick-replies {
+      padding: 0 16px 4px 56px;
+      display: flex; flex-wrap: wrap; gap: 7px;
+      animation: slide-in .2s ease-out;
+    }
+    .quick-reply-label {
+      width: 100%; font-size: 0.72rem;
+      color: var(--c-fg-soft); margin-bottom: 2px;
+      font-weight: 600;
+    }
+    .qr-chip {
+      background: var(--c-surface);
+      border: 1.5px solid var(--c-primary);
+      color: var(--c-primary);
+      border-radius: 20px;
+      padding: 6px 14px;
+      font-size: 0.8rem; font-weight: 500;
+      cursor: pointer;
+      transition: all var(--transition);
+      touch-action: manipulation;
+      min-height: 34px;
+      display: flex; align-items: center;
+      font-family: 'Noto Sans', sans-serif;
+    }
+    .qr-chip:hover { background: var(--c-primary); color: #fff; transform: translateY(-1px); box-shadow: var(--shadow-sm); }
+    .qr-chip:active { transform: translateY(0); }
 
     /* ── Utility ────────────────────────────────────────────────────────── */
     .hidden { display: none !important; }
@@ -758,6 +796,7 @@
     }
 
     function addAgentMessage(text, isEmergency = false) {
+      clearQuickReplies();
       const win = document.getElementById('chatMessages');
       const row = document.createElement('div');
       row.className = 'msg-row agent' + (isEmergency ? ' emergency' : '');
@@ -767,21 +806,29 @@
           <svg viewBox="0 0 24 24"><path d="M12 2a5 5 0 1 0 0 10A5 5 0 0 0 12 2z"/><path d="M12 14c-5.33 0-8 2.67-8 4v2h16v-2c0-1.33-2.67-4-8-4z"/></svg>
         </div>
         <div>
-          <div class="msg-bubble" role="paragraph">${escapeHtml(text)}</div>
+          <div class="msg-bubble" role="paragraph">${renderMarkdown(text)}</div>
           <div class="msg-time" aria-label="Enviado a las ${getTime()}">${getTime()}</div>
         </div>`;
       win.appendChild(row);
+
+      // Show contextual quick-reply chips
+      const qr = detectQuickReplies(text);
+      if (qr) showQuickReplies(qr);
+
       scrollChat();
     }
 
     function addUserMessage(text) {
+      clearQuickReplies();
       const win = document.getElementById('chatMessages');
       const row = document.createElement('div');
       row.className = 'msg-row user';
       row.setAttribute('role', 'article');
+      // Trim whitespace and convert newlines to <br> (avoids the pre-wrap split bug)
+      const safe = escapeHtml(text.trim()).replace(/\n+/g, '<br>');
       row.innerHTML = `
         <div>
-          <div class="msg-bubble">${escapeHtml(text)}</div>
+          <div class="msg-bubble">${safe}</div>
           <div class="msg-time">${getTime()}</div>
         </div>
         <div class="msg-avatar user-av" aria-hidden="true">Tú</div>`;
@@ -807,6 +854,157 @@
     function hideTyping() { document.getElementById('typing')?.remove(); }
     function scrollChat() { const w = document.getElementById('chatMessages'); w.scrollTop = w.scrollHeight; }
     function escapeHtml(t) { const d = document.createElement('div'); d.textContent = t; return d.innerHTML; }
+
+    /* ── Quick replies ────────────────────────────────────────────────────*/
+    function detectQuickReplies(text) {
+      const t = text.toLowerCase();
+      if (!text.includes('?')) return null;
+
+      // Asking for insurer
+      if (/aseguradora/.test(t) && !/recomend|prestador|hospital|clínica/.test(t)) {
+        return { chips: [
+          { label: 'Vida Clara',     value: 'Mi aseguradora es Vida Clara' },
+          { label: 'Andes Salud',    value: 'Mi aseguradora es Andes Salud' },
+          { label: 'Equa Benefits',  value: 'Mi aseguradora es Equa Benefits' },
+          { label: 'No tengo seguro', value: 'No tengo seguro médico' },
+        ]};
+      }
+
+      // Asking for plan — Vida Clara
+      if (/plan/.test(t) && /vida clara/.test(t)) {
+        return { chips: [
+          { label: 'Vida Clara Esencial', value: 'Mi plan es Vida Clara Esencial' },
+          { label: 'Vida Clara Plus',     value: 'Mi plan es Vida Clara Plus' },
+        ]};
+      }
+
+      // Asking for plan — Andes Salud
+      if (/plan/.test(t) && /andes salud/.test(t)) {
+        return { chips: [
+          { label: 'Andes Salud Familiar',   value: 'Mi plan es Andes Salud Familiar' },
+          { label: 'Andes Salud Preferente', value: 'Mi plan es Andes Salud Preferente' },
+        ]};
+      }
+
+      // Asking for plan — Equa Benefits
+      if (/plan/.test(t) && /equa/.test(t)) {
+        return { chips: [
+          { label: 'Equa Benefits Urbano',    value: 'Mi plan es Equa Benefits Urbano' },
+          { label: 'Equa Benefits Ejecutivo', value: 'Mi plan es Equa Benefits Ejecutivo' },
+        ]};
+      }
+
+      // Asking for plan (generic, no insurer mentioned)
+      if (/plan/.test(t) && !/recomend|prestador|hospital|clínica/.test(t)) {
+        return { chips: [
+          { label: 'Vida Clara Esencial',     value: 'Vida Clara Esencial' },
+          { label: 'Vida Clara Plus',         value: 'Vida Clara Plus' },
+          { label: 'Andes Salud Familiar',    value: 'Andes Salud Familiar' },
+          { label: 'Andes Salud Preferente',  value: 'Andes Salud Preferente' },
+          { label: 'Equa Benefits Urbano',    value: 'Equa Benefits Urbano' },
+          { label: 'Equa Benefits Ejecutivo', value: 'Equa Benefits Ejecutivo' },
+        ]};
+      }
+
+      // Asking about deductible
+      if (/deducible/.test(t)) {
+        return { chips: [
+          { label: '$0 — sin deducible', value: 'Mi deducible pendiente es $0' },
+          { label: '$50',                value: 'Mi deducible pendiente es $50' },
+          { label: '$100',               value: 'Mi deducible pendiente es $100' },
+          { label: '$150',               value: 'Mi deducible pendiente es $150' },
+          { label: '$180 o más',         value: 'Mi deducible pendiente es $180' },
+        ]};
+      }
+
+      // Simple yes/no follow-up
+      if (/¿sí o no\?|sí\s*o\s*no/i.test(text)) {
+        return { chips: [
+          { label: 'Sí',    value: 'Sí' },
+          { label: 'No',    value: 'No' },
+          { label: 'No sé', value: 'No lo sé' },
+        ]};
+      }
+
+      return null;
+    }
+
+    function showQuickReplies({ chips }) {
+      const win = document.getElementById('chatMessages');
+      const el = document.createElement('div');
+      el.id = 'quickReplies';
+      el.className = 'quick-replies';
+      el.setAttribute('role', 'group');
+      el.setAttribute('aria-label', 'Opciones de respuesta rápida');
+      chips.forEach(({ label, value }) => {
+        const btn = document.createElement('button');
+        btn.className = 'qr-chip';
+        btn.textContent = label;
+        btn.setAttribute('aria-label', `Responder: ${label}`);
+        btn.onclick = () => { sendQuickReply(value); };
+        el.appendChild(btn);
+      });
+      win.appendChild(el);
+      scrollChat();
+    }
+
+    function clearQuickReplies() {
+      document.getElementById('quickReplies')?.remove();
+    }
+
+    function sendQuickReply(value) {
+      const input = document.getElementById('userInput');
+      input.value = value;
+      sendMessage();
+    }
+
+    /* ── Markdown renderer (safe: escape first, then transform) ─────────── */
+    function renderMarkdown(raw) {
+      // 1. Escape HTML to prevent XSS
+      let s = raw
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;');
+
+      // 2. Bold **text**
+      s = s.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+
+      // 3. Italic *text* (single, not part of **)
+      s = s.replace(/(?<!\*)\*([^*\n]+?)\*(?!\*)/g, '<em>$1</em>');
+
+      // 4. Process line by line → paragraphs + bullet lists
+      const lines = s.split('\n');
+      const out = [];
+      let inList = false;
+      let paraLines = [];
+
+      const flushPara = () => {
+        const content = paraLines.join('<br>').trim();
+        if (content) out.push(`<p>${content}</p>`);
+        paraLines = [];
+      };
+
+      for (const line of lines) {
+        const trimmed = line.trim();
+        const bullet = trimmed.match(/^[•\-\*]\s+(.+)/);
+        if (bullet) {
+          flushPara();
+          if (!inList) { out.push('<ul>'); inList = true; }
+          out.push(`<li>${bullet[1]}</li>`);
+        } else {
+          if (inList) { out.push('</ul>'); inList = false; }
+          if (trimmed === '') {
+            flushPara();
+          } else {
+            paraLines.push(trimmed);
+          }
+        }
+      }
+      if (inList) out.push('</ul>');
+      flushPara();
+
+      return out.join('');
+    }
 
     /* ── Input auto-resize ────────────────────────────────────────────── */
     function autoResize(el) {
